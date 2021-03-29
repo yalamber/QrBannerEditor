@@ -1,17 +1,28 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <SbQrCodeEditor :width="350" :height="450" :qrCode="qrCode" />
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import QRCode from 'qrcode'
+import SbQrCodeEditor from './components/SbQrCodeEditor.vue'
 
 export default {
   name: 'App',
+  data: function (){
+    return {
+      qrCode: ''
+    }
+  },
   components: {
-    HelloWorld
+    SbQrCodeEditor
+  },
+  created: function () {
+    const vm = this
+    QRCode.toDataURL('This is testing', function (err, url) {
+      vm.qrCode = url
+    })
   }
 }
 </script>
@@ -23,6 +34,10 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
 }
 </style>
