@@ -1,6 +1,8 @@
 <template>
   <div id="app">
-    <SbQrCodeEditor :width="350" :height="450" :qrCode="qrCode" />
+    <div class="appContainer">
+      <SbQrCodeEditor :qrCode="qrCode" />
+    </div>
   </div>
 </template>
 
@@ -23,20 +25,22 @@ export default {
     QRCode.toDataURL('This is testing', function (err, url) {
       vm.qrCode = url
     })
+  },
+  methods: {
+   
   }
 }
 </script>
 
 <style>
+body {
+  margin: 0px;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
   height: 100vh;
 }
