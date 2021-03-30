@@ -39,7 +39,6 @@
           <font-awesome-icon icon="image" />
         </button>
       </div>
-      <!-- <button @click.prevent="addText"><font-awesome-icon icon="font" /> Add Text</button> -->
       <div class="canvas">
         <h2>Set Canvas</h2>
         <input
@@ -166,13 +165,6 @@ export default {
     addText: function (e) {
       console.log('here')
       console.log(this.texts)
-      // const prompt = window.prompt('Please enter text')
-      // if (prompt) {
-      //   this.texts = [...this.texts, {text: prompt, id: this.texts.length+1}]
-      // }
-      // if(this.texts.text){
-      //   this.texts = [...this.texts, {text: this.texts.text, id: this.texts.length+1}]
-      // }
       if(this.texts){
          this.texts = [...this.texts, {id: this.texts.length+1, ...this.texts}]
       }  
