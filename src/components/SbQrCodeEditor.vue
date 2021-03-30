@@ -51,14 +51,14 @@
           placeholder="Width"
           max="1000"
           min="200"
-          @change="setCanvasWidth"
+          v-model="canvasWidth"
         />
         <input
           type="number"
           max="800"
           min="200"
           placeholder="Height"
-          @change="setCanvasHeight"
+          v-model="canvasHeight"
         />
         <label>Background Color:</label>
         <input type="color" @change="setCanvasColor" :value="bgColor" />
@@ -310,12 +310,13 @@ export default {
 }
 .layers h2,
 .document-controls h2 {
-  font-size: 16px;
+  font-size: 14px;
   color: #fff;
   margin-bottom: 5px;
 }
 .document-controls input[type="number"] {
   display: inline-block;
+  padding: 5px;
   width: 44%;
 }
 .document-controls label {
@@ -351,7 +352,6 @@ export default {
   margin: 0px 0 10px 0;
 }
 .buttons-wrapper button {
-  width: 45%;
   font-size: 14px;
   cursor: pointer;
 }
