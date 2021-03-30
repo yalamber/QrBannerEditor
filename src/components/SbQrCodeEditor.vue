@@ -2,14 +2,14 @@
   <div class="container">
     <div class="sidebar">
       <div class="modal" v-if="show">
-        <a class="close-item" @click.prevent="cancelModal"
-          ><font-awesome-icon icon="window-close"
-        /></a>
         <div class="text-editor">
+          <a class="close-item" @click.prevent="cancelModal"
+            ><font-awesome-icon icon="window-close"
+          /></a>
           <h2>Add Text</h2>
           <form v-on:submit.prevent="addText">
             <div class="text-edit-options">
-              <select name="fontsize" v-model="texts.fontsize">
+              <select name="fontsize" v-model.number="texts.fontsize">
                 <option :value="24">Font Size</option>
                 <option
                   v-for="(fontSize, i) in fontSizes"
@@ -22,7 +22,7 @@
               <select name="fontfamily" v-model="texts.fontfamily">
                 <option :value="Arial">Font Family</option>
                 <option value="Tahoma">Tahoma</option>
-                <option value="Trebuchet MS ">Trebuchet MS</option>
+                <option value="Trebuchet MS">Trebuchet MS</option>
                 <option value="Arial">Arial</option>
               </select>
             </div>
@@ -30,22 +30,18 @@
               type="text"
               placeholder="Text"
               name="text"
+              class="text-field"
               v-model="texts.text"
             />
             <div class="actions">
-              <input class="add" type="submit" value="Submit" />
-              <input
-                @click.prevent="cancelModal"
-                class="cancel"
-                type="submit"
-                value="Cancel"
-              />
+              <input class="add" type="submit" value="Insert" />
             </div>
           </form>
         </div>
       </div>
       <div class="document-controls">
         <h2>Set Document Size</h2>
+        Width:
         <input
           type="number"
           placeholder="Width"
@@ -53,6 +49,7 @@
           min="200"
           v-model="canvasWidth"
         />
+        Height:
         <input
           type="number"
           max="800"
@@ -65,11 +62,12 @@
       </div>
       <hr class="separator" />
       <div class="buttons-wrapper">
-        <button @click.prevent="showModal">
-          <font-awesome-icon icon="edit" /> Add Text
+        Insert
+        <button title="Text" @click.prevent="showModal">
+          <font-awesome-icon icon="font" />
         </button>
-        <button class="btn btn-info" @click="onPickFile">
-          <font-awesome-icon icon="image" /> Add Image
+        <button title="Image" class="btn btn-info" @click="onPickFile">
+          <font-awesome-icon icon="image" />
         </button>
       </div>
       <hr class="separator" />
@@ -105,6 +103,12 @@
           :backgroundColor="bgColor"
           @canvas-updated="updateCanvas"
         >
+          <FabricImageFromURL
+            ref="qrCodeRef"
+            id="qr-code"
+            key="'qr-code'"
+            :url="qrCode"
+          ></FabricImageFromURL>
           <FabricText
             :id="text.id"
             v-for="text in texts"
@@ -118,12 +122,6 @@
             v-for="img in images"
             :key="'img-key-' + img.id"
             :url="img.url"
-          ></FabricImageFromURL>
-          <FabricImageFromURL
-            ref="qrCodeRef"
-            id="qr-code"
-            key="'qr-code'"
-            :url="qrCode"
           ></FabricImageFromURL>
         </FabricCanvas>
       </div>
@@ -176,26 +174,12 @@ export default {
         38,
         39,
         40,
-        42,
-        44,
-        46,
-        48,
-        50,
-        52,
-        54,
-        56,
-        58,
-        60,
-        62,
-        64,
       ],
     };
   },
   methods: {
     updateCanvas(e) {
       this.canvas = e;
-      // const qrCodeRef = this.$refs.qrCodeRef
-      // console.log(qrCodeRef);
     },
     showModal: function () {
       this.show = !this.show;
@@ -204,13 +188,14 @@ export default {
       this.show = false;
     },
     addText: function (e) {
-      console.log('here')
-      console.log(this.texts)
-      if(this.texts){
-         this.texts = [...this.texts, {id: this.texts.length+1, ...this.texts}]
-      }  
-      this.show = false
-      e.target.reset()
+      if (this.texts) {
+        this.texts = [
+          ...this.texts,
+          { id: this.texts.length + 1, ...this.texts },
+        ];
+      }
+      this.show = false;
+      e.target.reset();
     },
     deleteText: function (id) {
       const remainingArr = this.texts.filter((text) => text.id != id);
@@ -255,18 +240,6 @@ export default {
       const remainingArr = this.images.filter((image) => image.id != id);
       this.images = remainingArr;
     },
-    setCanvasWidth: function (e) {
-      const width = parseInt(e.target.value);
-      if (width >= 200 && width <= 1000) {
-        this.canvasWidth = width;
-      }
-    },
-    setCanvasHeight: function (e) {
-      const height = parseInt(e.target.value);
-      if (height >= 200 && height <= 800) {
-        this.canvasHeight = height;
-      }
-    },
     setCanvasColor: function (e) {
       this.bgColor = e.target.value;
     },
@@ -281,7 +254,7 @@ export default {
 <style scoped>
 .qrEditor {
   margin: 10px;
-  border: 1px dashed;
+  border: 1px dashed #000;
 }
 .container {
   display: flex;
@@ -292,6 +265,7 @@ export default {
 .sidebar {
   border-right: 1px solid #ccc;
   background: #1e1f22;
+  color: #fff;
   padding: 25px;
   height: 100%;
   width: 350px;
@@ -317,7 +291,6 @@ export default {
 .document-controls input[type="number"] {
   display: inline-block;
   padding: 5px;
-  width: 44%;
 }
 .document-controls label {
   color: #fff;
@@ -330,6 +303,7 @@ export default {
 .modal {
   position: absolute;
   background: rgba(0, 0, 0, 0.8);
+  color: #000;
   width: 100%;
   height: 100%;
   z-index: 999;
@@ -340,60 +314,50 @@ export default {
   align-items: center;
 }
 .text-editor {
+  position: relative;
   display: flex;
   justify-content: center;
-  align-items: center;
   flex-direction: column;
   padding: 30px 40px;
-  background: rgba(109, 107, 107, 0.8);
+  border-radius: 5px;
+  background: #fff;
 }
 .text-editor h2 {
-  color: #fff;
+  color: #000;
   margin: 0px 0 10px 0;
 }
 .buttons-wrapper button {
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
-}
-.buttons-wrapper button + button {
-  margin-left: 10%;
 }
 .actions {
   display: flex;
-  margin-top: 20px;
-  justify-content: space-between;
+  align-items: flex-end;
 }
 .actions .add,
-.actions .cancel,
 .buttons button {
-  background: rgb(4, 124, 4);
   border: none;
   outline: none;
+  background: #1e1f22;
   color: #fff;
   padding: 10px 15px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
-.actions .cancel {
-  background: rgb(255, 0, 0);
-}
 .actions .add:hover,
 .buttons button:hover {
-  background: rgb(55, 172, 55);
-}
-.actions .cancel:hover {
-  background: rgb(204, 83, 83);
+  background: #000;
 }
 .text-edit-options select,
 .text-editor input[type="text"] {
-  height: 30px;
   outline: none;
   border: none;
 }
 .text-editor input[type="text"] {
-  margin-top: 10px;
-  width: 96%;
-  padding: 0 2%;
+  width: 300px;
+  margin: 10px 0;
+  border: 1px solid #EEE;
+  padding: 10px;
 }
 .text-edit-options select + select {
   margin-left: 10px;
@@ -402,8 +366,7 @@ a.close-item {
   position: absolute;
   top: 10px;
   right: 15px;
-  color: #fff;
-  font-size: 32px;
+  font-size: 22px;
   cursor: pointer;
 }
 .item {
@@ -435,7 +398,8 @@ a.close-item {
 .separator {
   border: none;
   height: 1px;
-  color: #CCC;
-  background-color: #CCC;
+  color: rgb(59, 59, 59);
+  background-color: rgb(59, 59, 59);
+  margin: 15px 0;
 }
 </style>
