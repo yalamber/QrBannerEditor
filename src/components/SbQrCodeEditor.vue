@@ -204,23 +204,13 @@ export default {
       this.show = false;
     },
     addText: function (e) {
-      console.log("here");
-      console.log(this.texts);
-      // const prompt = window.prompt('Please enter text')
-      // if (prompt) {
-      //   this.texts = [...this.texts, {text: prompt, id: this.texts.length+1}]
-      // }
-      // if(this.texts.text){
-      //   this.texts = [...this.texts, {text: this.texts.text, id: this.texts.length+1}]
-      // }
-      if (this.texts) {
-        this.texts = [
-          ...this.texts,
-          { id: this.texts.length + 1, ...this.texts },
-        ];
-      }
-      this.show = false;
-      e.target.reset();
+      console.log('here')
+      console.log(this.texts)
+      if(this.texts){
+         this.texts = [...this.texts, {id: this.texts.length+1, ...this.texts}]
+      }  
+      this.show = false
+      e.target.reset()
     },
     deleteText: function (id) {
       const remainingArr = this.texts.filter((text) => text.id != id);
