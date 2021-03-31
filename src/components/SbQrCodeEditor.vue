@@ -10,17 +10,17 @@
           <form v-on:submit.prevent="addText">
             <div class="text-edit-options">
               <select name="fontsize" v-model.number="texts.fontsize">
-                <option :value="24">Font Size</option>
+                 <option :value="undefined">Font Size</option>
                 <option
                   v-for="(fontSize, i) in fontSizes"
                   :key="i"
-                  v-bind:value="fontSize"
+                  :value="fontSize"
                 >
                   {{ fontSize }}
                 </option>
               </select>
               <select name="fontfamily" v-model="texts.fontfamily">
-                <option :value="Arial">Font Family</option>
+                <option :value="undefined">Font Family</option>
                 <option value="Tahoma">Tahoma</option>
                 <option value="Trebuchet MS">Trebuchet MS</option>
                 <option value="Arial">Arial</option>
@@ -133,8 +133,11 @@
           accept="image/*"
           @change="onFilePicked"
         />
-        <button @click.prevent="saveImg">
+        <button @click.prevent="saveQRcode('image')">
           <font-awesome-icon icon="save" /> Save as Image
+        </button>
+         <button @click.prevent="saveQRcode('pdf')">
+          <font-awesome-icon icon="save" /> Save as PDF
         </button>
       </div>
     </div>
@@ -143,6 +146,7 @@
 
 <script>
 import vueFabricWrapper from "vue-fabric-wrapper";
+import jsPDF from "jspdf";
 export default {
   name: "SbQrCodeEditor",
   props: {
@@ -159,8 +163,8 @@ export default {
         {
           id: 0,
           text: "",
-          fontsize: 24,
-          fontfamily: "Arial",
+          fontsize: "",
+          fontfamily: "",
         },
       ],
       bgColor: "#FFFFFF",
@@ -201,7 +205,8 @@ export default {
       const remainingArr = this.texts.filter((text) => text.id != id);
       this.texts = remainingArr;
     },
-    saveImg: function () {
+    saveQRcode: function (type) {
+      const doc = new jsPDF();
       const canvas = this.canvas;
       const dataURL = canvas.toDataURL({
         width: this.canvasWidth,
@@ -210,12 +215,17 @@ export default {
         top: 0,
         format: "png",
       });
-      const link = document.createElement("a");
-      link.download = "your-qr.png";
-      link.href = dataURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if(type === "image"){
+        const link = document.createElement("a");
+        link.download = "your-qr.png";
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }else{
+        doc.addImage(dataURL, 'png', 10, 10);
+        doc.save("your-qr.pdf");
+      }
     },
     onPickFile: function () {
       this.$refs.fileInput.click();
@@ -343,6 +353,9 @@ export default {
   padding: 10px 15px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+.buttons button+button {
+  margin-left: 10px;
 }
 .actions .add:hover,
 .buttons button:hover {
