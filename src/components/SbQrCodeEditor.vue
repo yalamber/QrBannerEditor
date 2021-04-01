@@ -14,13 +14,13 @@
                 <option
                   v-for="(fontSize, i) in fontSizes"
                   :key="i"
-                  :value="fontSize"
+                  v-bind:value="fontSize"
                 >
                   {{ fontSize }}
                 </option>
               </select>
               <select name="fontfamily" v-model="texts.fontfamily">
-                <option :value="undefined">Font Family</option>
+                <option value="undefined">Font Family</option>
                 <option value="Tahoma">Tahoma</option>
                 <option value="Trebuchet MS">Trebuchet MS</option>
                 <option value="Arial">Arial</option>
@@ -86,7 +86,7 @@
         <div v-for="image in images" :key="image.id">
           <div class="item" v-if="image.url">
             <div class="thumb">
-              <img :src="image.url" />
+              <img v-bind:src="image.url" />
             </div>
             <a @click.prevent="deleteImage(image.id)"
               ><font-awesome-icon icon="trash"
@@ -159,14 +159,7 @@ export default {
       canvasWidth: 350,
       canvasHeight: 450,
       images: [],
-      texts: [
-        {
-          id: 0,
-          text: "",
-          fontsize: "",
-          fontfamily: "",
-        },
-      ],
+      texts: [],
       bgColor: "#FFFFFF",
       fontSizes: [
         26,
@@ -184,6 +177,7 @@ export default {
   methods: {
     updateCanvas(e) {
       this.canvas = e;
+      console.log("canvas", this.canvas.getObjects())
     },
     showModal: function () {
       this.show = !this.show;
