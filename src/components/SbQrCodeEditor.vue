@@ -57,8 +57,18 @@
           placeholder="Height"
           v-model="canvasHeight"
         />
-        <label>Background Color:</label>
-        <input type="color" @change="setCanvasColor" :value="bgColor" />
+        <div class="background-controls">
+          <div>
+            <label>Background Color:</label>
+            <input type="color" @change="setCanvasColor" :value="bgColor" />
+          </div>
+          <div>
+            <label>Background Image:</label>
+            <button title="Image" class="btn btn-info" @click="onbgPickFile">
+              <font-awesome-icon icon="image" />
+            </button>
+          </div>
+        </div>
       </div>
       <hr class="separator" />
       <div class="buttons-wrapper">
@@ -73,33 +83,37 @@
       <hr class="separator" />
       <div class="layers">
         <h2>Layers <font-awesome-icon icon="layer-group" /></h2>
-        <div v-for="text in texts" :key="text.id">
-          <div class="item" v-if="text.text">
-            <div class="text">
-              {{ text.text }}
-            </div>
-            <a @click.prevent="deleteText(text.id)"
-              ><font-awesome-icon icon="trash"
-            /></a>
+        <div v-for="text in texts" :key="text.id" class="item">
+          <div class="text">
+            {{ text.text }}
           </div>
+          <a @click.prevent="deleteText(text.id)"
+            ><font-awesome-icon icon="trash"
+          /></a>
         </div>
-        <div v-for="image in images" :key="image.id">
-          <div class="item" v-if="image.url">
-            <div class="thumb">
-              <img v-bind:src="image.url" />
-            </div>
-            <a @click.prevent="deleteImage(image.id)"
-              ><font-awesome-icon icon="trash"
-            /></a>
+        <div v-for="image in images" :key="image.id"  class="item">
+          <div class="thumb">
+            <img v-bind:src="image.url" />
           </div>
+          <a @click.prevent="deleteImage(image.id)"
+            ><font-awesome-icon icon="trash"
+          /></a>
+        </div>
+        <div class="item" v-if="bgImage">
+          <div class="thumb">
+            <img v-bind:src="bgImage.url" />
+          </div>
+          <a @click.prevent="deleteBgImage(bgImage.id)"
+            ><font-awesome-icon icon="trash"
+          /></a>
         </div>
       </div>
     </div>
     <div class="main">
       <div class="qrEditor">
         <FabricCanvas
-          :height="canvasHeight"
-          :width="canvasWidth"
+          :height="parseInt(canvasHeight)"
+          :width="parseInt(canvasWidth)"
           :backgroundColor="bgColor"
           @canvas-updated="updateCanvas"
         >
@@ -133,6 +147,13 @@
           accept="image/*"
           @change="onFilePicked"
         />
+        <input
+          type="file"
+          style="display: none"
+          ref="bgfileInput"
+          accept="image/*"
+          @change="onbgFilePicked"
+        />
         <button @click.prevent="saveQRcode('image')">
           <font-awesome-icon icon="save" /> Save as Image
         </button>
@@ -147,6 +168,8 @@
 <script>
 import vueFabricWrapper from "vue-fabric-wrapper";
 import jsPDF from "jspdf";
+import { fabric } from "fabric";
+
 export default {
   name: "SbQrCodeEditor",
   props: {
@@ -161,6 +184,7 @@ export default {
       images: [],
       texts: [],
       bgColor: "#FFFFFF",
+      bgImage: null,
       fontSizes: [
         26,
         28,
@@ -175,9 +199,9 @@ export default {
     };
   },
   methods: {
-    updateCanvas(e) {
-      this.canvas = e;
-      console.log("canvas", this.canvas.getObjects())
+    updateCanvas(event) {
+      this.canvas = event;
+      //console.log("canvas", this.canvas.getObjects()) 
     },
     showModal: function () {
       this.show = !this.show;
@@ -224,6 +248,39 @@ export default {
     onPickFile: function () {
       this.$refs.fileInput.click();
     },
+    onbgPickFile: function () {
+      this.$refs.bgfileInput.click();
+    },
+    resizeImage: (base64Str, maxWidth, maxHeight) => {
+      return new Promise((resolve) => {
+        let img = new Image()
+        img.src = base64Str
+        img.onload = () => {
+          let canvas = document.createElement('canvas')
+          const MAX_WIDTH = maxWidth
+          const MAX_HEIGHT = maxHeight
+          let width = img.width
+          let height = img.height
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width
+              width = MAX_WIDTH
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height
+              height = MAX_HEIGHT
+            }
+          }
+          canvas.width = width
+          canvas.height = height
+          let ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, width, height)
+          resolve(canvas.toDataURL())
+        }
+      })
+    },
     onFilePicked(event) {
       const vm = this;
       const files = event.target.files;
@@ -231,18 +288,53 @@ export default {
       const fileReader = new FileReader();
       fileReader.readAsDataURL(files[0]);
       fileReader.addEventListener("load", () => {
-        vm.images = [
-          ...vm.images,
-          {
-            url: fileReader.result,
-            id: `img-${filename}`,
-          },
-        ];
+       this.resizeImage(fileReader.result, this.canvasWidth-50, this.canvasHeight-50).then((result)=>{
+          vm.images = [
+            ...vm.images,
+            {
+              url: result,
+              id: `img-${filename}`,
+            },
+          ];
+          //console.log(result)
+       }).catch(err => console.log(err))
+        
+      });
+    },
+    onbgFilePicked(event) {
+      const files = event.target.files;
+      const filename = files[0].name;
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(files[0]);
+      const canvas = this.canvas
+      const width = this.canvasWidth
+      const height = this.canvasHeight
+      fileReader.addEventListener("load", () => {
+        fabric.Image.fromURL(fileReader.result, function(img) {
+          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+            width,
+            height,
+            originX: 'left',
+            originY: 'top'
+          });
+        });
+        this.bgImage = {
+          url: fileReader.result,
+          id: `img-${filename}`,
+        };
       });
     },
     deleteImage: function (id) {
       const remainingArr = this.images.filter((image) => image.id != id);
       this.images = remainingArr;
+    },
+    deleteBgImage: function(id) {
+      console.log(this.canvas)
+      if(id === this.bgImage.id){
+        this.bgImage = null;
+        this.canvas.backgroundImage = 0;
+        this.canvas.renderAll();
+      }
     },
     setCanvasColor: function (e) {
       this.bgColor = e.target.value;
@@ -408,5 +500,14 @@ a.close-item {
   color: rgb(59, 59, 59);
   background-color: rgb(59, 59, 59);
   margin: 15px 0;
+}
+.background-controls {
+    display: flex;
+}
+.background-controls div + div {
+  margin-left: 10px;
+}
+.background-controls button {
+  cursor: pointer;
 }
 </style>
