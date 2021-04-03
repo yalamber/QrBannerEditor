@@ -82,23 +82,26 @@
       </div>
       <hr class="separator" />
       <div class="layers">
-        <h2>Layers <font-awesome-icon icon="layer-group" /></h2>
-        <div v-for="text in texts" :key="text.id" class="item">
-          <div class="text">
-            {{ text.text }}
+        <h2>Action <font-awesome-icon icon="layer-group" /></h2>
+        <div v-for="item in selectedObject" :key="item.id" class="item">
+          <div v-if="item.text" class="text">
+            {{ item.text }}
           </div>
-          <a @click.prevent="deleteText(text.id)"
+           <div v-if="item.url" class="thumb">
+            <img v-bind:src="item.url" />
+          </div>
+          <a @click.prevent="deleteText(item.id)"
             ><font-awesome-icon icon="trash"
           /></a>
         </div>
-        <div v-for="image in images" :key="image.id"  class="item">
+        <!-- <div v-for="image in images" :key="image.id"  class="item">
           <div class="thumb">
             <img v-bind:src="image.url" />
           </div>
           <a @click.prevent="deleteImage(image.id)"
             ><font-awesome-icon icon="trash"
           /></a>
-        </div>
+        </div> -->
         <div class="item" v-if="bgImage">
           <div class="thumb">
             <img v-bind:src="bgImage.url" />
@@ -130,12 +133,14 @@
             :text="text.text"
             :fontSize="text.fontsize"
             :fontFamily="text.fontfamily"
+            @selected = "textSelected"
           ></FabricText>
           <FabricImageFromURL
             :id="img.id"
             v-for="img in images"
             :key="'img-key-' + img.id"
             :url="img.url"
+            @selected = "imageSelected"
           ></FabricImageFromURL>
         </FabricCanvas>
       </div>
@@ -181,6 +186,7 @@ export default {
       canvas: null,
       canvasWidth: 350,
       canvasHeight: 450,
+      selectedObject: null,
       images: [],
       texts: [],
       bgColor: "#FFFFFF",
@@ -199,6 +205,15 @@ export default {
     };
   },
   methods: {
+    imageSelected (obj) {
+      const selectedObject = this.images.filter((image) => image.id === obj.id);
+      this.selectedObject = selectedObject;
+    },
+    textSelected (obj) {
+      console.log("object", obj)
+      const selectedObject = this.texts.filter((text) => text.id === obj.id);
+      this.selectedObject = selectedObject;
+    },
     updateCanvas(event) {
       this.canvas = event;
       //console.log("canvas", this.canvas.getObjects()) 
@@ -210,18 +225,17 @@ export default {
       this.show = false;
     },
     addText: function (e) {
-      if (this.texts) {
-        this.texts = [
-          ...this.texts,
-          { id: this.texts.length + 1, ...this.texts },
-        ];
-      }
+      this.texts = [
+        ...this.texts,
+        { id: 'text-'+this.texts.length + 1, ...this.texts },
+      ];
       this.show = false;
       e.target.reset();
     },
     deleteText: function (id) {
       const remainingArr = this.texts.filter((text) => text.id != id);
       this.texts = remainingArr;
+      this.selectedObject = null
     },
     saveQRcode: function (type) {
       const doc = new jsPDF();
@@ -292,13 +306,12 @@ export default {
           vm.images = [
             ...vm.images,
             {
-              url: result,
               id: `img-${filename}`,
+              url: result,
             },
           ];
           //console.log(result)
        }).catch(err => console.log(err))
-        
       });
     },
     onbgFilePicked(event) {
