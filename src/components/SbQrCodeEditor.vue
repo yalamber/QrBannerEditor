@@ -90,15 +90,18 @@
           <div v-if="item.url" class="thumb">
             <img v-bind:src="item.url" />
           </div>
+           <div>
+            <a @click.prevent="moveBack(item.id)">Back</a>
+            <a @click.prevent="moveFront(item.id)">Front</a>
+          </div>
           <div v-if="item.url">
-            <a @click.prevent="deleteImage(item.id)"
-              ><font-awesome-icon icon="trash"
-            /></a>
+            <a @click.prevent="deleteImage(item.id)">
+              <font-awesome-icon icon="trash"/></a>
           </div>
           <div v-if="item.text">
-            <a @click.prevent="deleteText(item.id)"
-              ><font-awesome-icon icon="trash"
-            /></a>
+            <a @click.prevent="deleteText(item.id)">
+              <font-awesome-icon icon="trash"/>
+            </a>
           </div>
         </div>
         <div class="item" v-if="bgImage">
@@ -215,7 +218,6 @@ export default {
     },
     updateCanvas(event) {
       this.canvas = event;
-      //console.log("canvas", this.canvas.getObjects()) 
     },
     showModal: function () {
       this.show = !this.show;
@@ -334,13 +336,13 @@ export default {
     deleteText: function (id) {
       const remainingArr = this.texts.filter((text) => text.id != id);
       this.texts = remainingArr;
-      this.selectedObject = null
+      this.selectedObject = null;
     },
     deleteImage: function (id) {
       const remainingArr = this.images.filter((image) => image.id != id);
       console.log("remainingArr", remainingArr)
       this.images = remainingArr;
-      this.selectedObject = null
+      this.selectedObject = null;
     },
     deleteBgImage: function(id) {
       if(id === this.bgImage.id){
@@ -348,6 +350,14 @@ export default {
         this.canvas.backgroundImage = 0;
         this.canvas.renderAll();
       }
+    },
+    moveBack (id) {
+      const selectedObj = this.canvas.getObjects().find(obj => obj.id === id);
+      this.canvas.sendToBack(selectedObj);
+    },
+    moveFront (id) {
+      const selectedObj = this.canvas.getObjects().find(obj => obj.id === id);
+      this.canvas.bringToFront(selectedObj);
     },
     setCanvasColor: function (e) {
       this.bgColor = e.target.value;
