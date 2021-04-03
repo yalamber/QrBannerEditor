@@ -3,9 +3,9 @@
     <div class="sidebar">
       <div class="modal" v-if="show">
         <div class="text-editor">
-          <a class="close-item" @click.prevent="cancelModal"
-            ><font-awesome-icon icon="window-close"
-          /></a>
+          <a class="close-item" @click.prevent="cancelModal">
+            <font-awesome-icon icon="window-close"/>
+          </a>
           <h2>Add Text</h2>
           <form v-on:submit.prevent="addText">
             <div class="text-edit-options">
@@ -82,26 +82,25 @@
       </div>
       <hr class="separator" />
       <div class="layers">
-        <h2>Action <font-awesome-icon icon="layer-group" /></h2>
+        <h2>Action</h2>
         <div v-for="item in selectedObject" :key="item.id" class="item">
           <div v-if="item.text" class="text">
             {{ item.text }}
           </div>
-           <div v-if="item.url" class="thumb">
+          <div v-if="item.url" class="thumb">
             <img v-bind:src="item.url" />
           </div>
-          <a @click.prevent="deleteText(item.id)"
-            ><font-awesome-icon icon="trash"
-          /></a>
-        </div>
-        <!-- <div v-for="image in images" :key="image.id"  class="item">
-          <div class="thumb">
-            <img v-bind:src="image.url" />
+          <div v-if="item.url">
+            <a @click.prevent="deleteImage(item.id)"
+              ><font-awesome-icon icon="trash"
+            /></a>
           </div>
-          <a @click.prevent="deleteImage(image.id)"
-            ><font-awesome-icon icon="trash"
-          /></a>
-        </div> -->
+          <div v-if="item.text">
+            <a @click.prevent="deleteText(item.id)"
+              ><font-awesome-icon icon="trash"
+            /></a>
+          </div>
+        </div>
         <div class="item" v-if="bgImage">
           <div class="thumb">
             <img v-bind:src="bgImage.url" />
@@ -118,6 +117,7 @@
           :height="parseInt(canvasHeight)"
           :width="parseInt(canvasWidth)"
           :backgroundColor="bgColor"
+          :preserveObjectStacking="true"
           @canvas-updated="updateCanvas"
         >
           <FabricImageFromURL
@@ -210,7 +210,6 @@ export default {
       this.selectedObject = selectedObject;
     },
     textSelected (obj) {
-      console.log("object", obj)
       const selectedObject = this.texts.filter((text) => text.id === obj.id);
       this.selectedObject = selectedObject;
     },
@@ -223,19 +222,6 @@ export default {
     },
     cancelModal: function () {
       this.show = false;
-    },
-    addText: function (e) {
-      this.texts = [
-        ...this.texts,
-        { id: 'text-'+this.texts.length + 1, ...this.texts },
-      ];
-      this.show = false;
-      e.target.reset();
-    },
-    deleteText: function (id) {
-      const remainingArr = this.texts.filter((text) => text.id != id);
-      this.texts = remainingArr;
-      this.selectedObject = null
     },
     saveQRcode: function (type) {
       const doc = new jsPDF();
@@ -337,12 +323,26 @@ export default {
         };
       });
     },
+    addText: function (e) {
+      this.texts = [
+        ...this.texts,
+        { id: 'text-'+this.texts.length + 1, ...this.texts },
+      ];
+      this.show = false;
+      e.target.reset();
+    },
+    deleteText: function (id) {
+      const remainingArr = this.texts.filter((text) => text.id != id);
+      this.texts = remainingArr;
+      this.selectedObject = null
+    },
     deleteImage: function (id) {
       const remainingArr = this.images.filter((image) => image.id != id);
+      console.log("remainingArr", remainingArr)
       this.images = remainingArr;
+      this.selectedObject = null
     },
     deleteBgImage: function(id) {
-      console.log(this.canvas)
       if(id === this.bgImage.id){
         this.bgImage = null;
         this.canvas.backgroundImage = 0;
