@@ -37,10 +37,10 @@
               <img v-bind:src="selectedObject.url" />
             </div>
             <div class="action-items">
-              <a @click.prevent="moveBack(selectedObject.id)">
+              <a @click.prevent="moveFront(selectedObject.id)">
                 <font-awesome-icon icon="caret-square-up" />
               </a>
-              <a @click.prevent="moveFront(selectedObject.id)">
+              <a @click.prevent="moveBack(selectedObject.id)">
                 <font-awesome-icon icon="caret-square-down" />
               </a>
               <a
