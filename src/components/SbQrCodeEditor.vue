@@ -1,153 +1,21 @@
 <template>
   <div class="container">
-    <div class="sidebar">
-      <div class="modal" v-if="show">
-        <div class="text-editor">
-          <a class="close-item" @click.prevent="cancelModal">
-            <font-awesome-icon icon="window-close"/>
-          </a>
-          <h2>Add Text</h2>
-          <form v-on:submit.prevent="addText">
-            <div class="text-edit-options">
-              <select name="fontsize" v-model.number="texts.fontsize">
-                 <option :value="undefined">Font Size</option>
-                <option
-                  v-for="(fontSize, i) in fontSizes"
-                  :key="i"
-                  v-bind:value="fontSize"
-                >
-                  {{ fontSize }}
-                </option>
-              </select>
-              <select name="fontfamily" v-model="texts.fontfamily">
-                <option value="undefined">Font Family</option>
-                <option value="Tahoma">Tahoma</option>
-                <option value="Trebuchet MS">Trebuchet MS</option>
-                <option value="Arial">Arial</option>
-              </select>
-            </div>
-            <input
-              type="text"
-              placeholder="Text"
-              name="text"
-              class="text-field"
-              v-model="texts.text"
-            />
-            <div class="actions">
-              <input class="add" type="submit" value="Insert" />
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="document-controls">
-        <h2>Set Document Size</h2>
-        Width:
-        <input
-          type="number"
-          placeholder="Width"
-          max="1000"
-          min="200"
-          v-model="canvasWidth"
-        />
-        Height:
-        <input
-          type="number"
-          max="800"
-          min="200"
-          placeholder="Height"
-          v-model="canvasHeight"
-        />
-        <div class="background-controls">
-          <div>
-            <label>Background Color:</label>
-            <input type="color" @change="setCanvasColor" :value="bgColor" />
-          </div>
-          <div>
-            <label>Background Image:</label>
-            <button title="Image" class="btn btn-info" @click="onbgPickFile">
-              <font-awesome-icon icon="image" />
-            </button>
-          </div>
-        </div>
-      </div>
-      <hr class="separator" />
+    <div class="topBar">
       <div class="buttons-wrapper">
-        Insert
-        <button title="Text" @click.prevent="showModal">
-          <font-awesome-icon icon="font" />
+        <button title="Text" @click.prevent="showTextModal">
+          <font-awesome-icon
+            icon="font"
+            size="2x"
+            :style="{ color: 'white' }"
+          />
         </button>
         <button title="Image" class="btn btn-info" @click="onPickFile">
-          <font-awesome-icon icon="image" />
+          <font-awesome-icon
+            icon="image"
+            size="2x"
+            :style="{ color: 'white' }"
+          />
         </button>
-      </div>
-      <hr class="separator" />
-      <div class="layers">
-        <h2>Action</h2>
-        <div v-for="item in selectedObject" :key="item.id" class="item">
-          <div v-if="item.text" class="text">
-            {{ item.text }}
-          </div>
-          <div v-if="item.url" class="thumb">
-            <img v-bind:src="item.url" />
-          </div>
-           <div>
-            <a @click.prevent="moveBack(item.id)">Back</a>
-            <a @click.prevent="moveFront(item.id)">Front</a>
-          </div>
-          <div v-if="item.url">
-            <a @click.prevent="deleteImage(item.id)">
-              <font-awesome-icon icon="trash"/></a>
-          </div>
-          <div v-if="item.text">
-            <a @click.prevent="deleteText(item.id)">
-              <font-awesome-icon icon="trash"/>
-            </a>
-          </div>
-        </div>
-        <div class="item" v-if="bgImage">
-          <div class="thumb">
-            <img v-bind:src="bgImage.url" />
-          </div>
-          <a @click.prevent="deleteBgImage(bgImage.id)"
-            ><font-awesome-icon icon="trash"
-          /></a>
-        </div>
-      </div>
-    </div>
-    <div class="main">
-      <div class="qrEditor">
-        <FabricCanvas
-          :height="parseInt(canvasHeight)"
-          :width="parseInt(canvasWidth)"
-          :backgroundColor="bgColor"
-          :preserveObjectStacking="true"
-          @canvas-updated="updateCanvas"
-        >
-          <FabricImageFromURL
-            ref="qrCodeRef"
-            id="qr-code"
-            key="'qr-code'"
-            :url="qrCode"
-          ></FabricImageFromURL>
-          <FabricText
-            :id="text.id"
-            v-for="text in texts"
-            :key="'text-key-' + text.id"
-            :text="text.text"
-            :fontSize="text.fontsize"
-            :fontFamily="text.fontfamily"
-            @selected = "textSelected"
-          ></FabricText>
-          <FabricImageFromURL
-            :id="img.id"
-            v-for="img in images"
-            :key="'img-key-' + img.id"
-            :url="img.url"
-            @selected = "imageSelected"
-          ></FabricImageFromURL>
-        </FabricCanvas>
-      </div>
-      <div class="buttons">
         <input
           type="file"
           style="display: none"
@@ -155,19 +23,167 @@
           accept="image/*"
           @change="onFilePicked"
         />
-        <input
-          type="file"
-          style="display: none"
-          ref="bgfileInput"
-          accept="image/*"
-          @change="onbgFilePicked"
-        />
-        <button @click.prevent="saveQRcode('image')">
-          <font-awesome-icon icon="save" /> Save as Image
-        </button>
-         <button @click.prevent="saveQRcode('pdf')">
-          <font-awesome-icon icon="save" /> Save as PDF
-        </button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="sidebar sidebar1" v-if="selectedObject">
+        <div class="actions">
+          <h2>Action</h2>
+          <div v-for="item in selectedObject" :key="item.id" class="item">
+            <div v-if="item.text" class="text">
+              {{ item.text }}
+            </div>
+            <div v-if="item.url" class="thumb">
+              <img v-bind:src="item.url" />
+            </div>
+            <div>
+              <a @click.prevent="moveBack(item.id)">Back</a>
+              <a @click.prevent="moveFront(item.id)">Front</a>
+            </div>
+            <div v-if="item.url">
+              <a @click.prevent="deleteImage(item.id)">
+                <font-awesome-icon icon="trash"
+              /></a>
+            </div>
+            <div v-if="item.text">
+              <a @click.prevent="deleteText(item.id)">
+                <font-awesome-icon icon="trash" />
+              </a>
+            </div>
+          </div>
+          <div class="item" v-if="bgImage">
+            <div class="thumb">
+              <img v-bind:src="bgImage.url" />
+            </div>
+            <a @click.prevent="deleteBgImage(bgImage.id)"
+              ><font-awesome-icon icon="trash"
+            /></a>
+          </div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="qrEditor">
+          <FabricCanvas
+            :height="parseInt(canvasHeight)"
+            :width="parseInt(canvasWidth)"
+            :backgroundColor="bgColor"
+            :preserveObjectStacking="true"
+            @canvas-updated="updateCanvas"
+            @object-added="centerQrCode"
+          >
+            <FabricImageFromURL
+              ref="qrCodeRef"
+              id="qr-code"
+              key="'qr-code'"
+              :url="qrCode"
+            ></FabricImageFromURL>
+            <FabricText
+              :id="text.id"
+              v-for="text in texts"
+              :key="'text-key-' + text.id"
+              :text="text.text"
+              :fontSize="text.fontsize"
+              :fontFamily="text.fontfamily"
+              @selected="textSelected"
+            ></FabricText>
+            <FabricImageFromURL
+              :id="img.id"
+              v-for="img in images"
+              :key="'img-key-' + img.id"
+              :url="img.url"
+              @selected="imageSelected"
+            ></FabricImageFromURL>
+          </FabricCanvas>
+        </div>
+      </div>
+      <div class="sidebar sidebar2">
+        <div class="document-controls">
+          <h2>Set Document Size</h2>
+          <label
+            >Width:
+            <input
+              type="number"
+              placeholder="Width"
+              max="1000"
+              min="200"
+              v-model="canvasWidth"
+            />
+          </label>
+          <label>
+            Height:
+            <input
+              type="number"
+              max="800"
+              min="200"
+              placeholder="Height"
+              v-model="canvasHeight"
+            />
+          </label>
+          <div class="background-controls">
+            <h2>Background</h2>
+            <div>
+              <label>Color:</label>
+              <input type="color" @change="setCanvasColor" :value="bgColor" />
+            </div>
+            <div>
+              <label>Image:</label>
+              <button title="Image" class="btn btn-info" @click="onbgPickFile">
+                <font-awesome-icon icon="image" />
+              </button>
+            </div>
+            <input
+              type="file"
+              style="display: none"
+              ref="bgfileInput"
+              accept="image/*"
+              @change="onbgFilePicked"
+            />
+          </div>
+          <div class="export-buttons">
+            <h2>Save as <font-awesome-icon icon="save" /></h2>
+            <button @click.prevent="saveQRcode('image')">Image</button>
+            &nbsp;
+            <button @click.prevent="saveQRcode('pdf')">PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal" v-if="textModalShown">
+      <div class="text-editor">
+        <a class="close-item" @click.prevent="cancelTextModal">
+          <font-awesome-icon icon="window-close" />
+        </a>
+        <h2>Add Text</h2>
+        <form v-on:submit.prevent="addText">
+          <div class="text-edit-options">
+            <select name="fontsize" v-model.number="texts.fontsize">
+              <option :value="undefined">Font Size</option>
+              <option
+                v-for="(fontSize, i) in fontSizes"
+                :key="i"
+                v-bind:value="fontSize"
+              >
+                {{ fontSize }}
+              </option>
+            </select>
+            <select name="fontfamily" v-model="texts.fontfamily">
+              <option value="undefined">Font Family</option>
+              <option value="Tahoma">Tahoma</option>
+              <option value="Trebuchet MS">Trebuchet MS</option>
+              <option value="Arial">Arial</option>
+            </select>
+          </div>
+          <input
+            type="text"
+            placeholder="Text"
+            name="text"
+            class="text-field"
+            v-model="texts.text"
+          />
+          <div class="actions">
+            <input class="add" type="submit" value="Insert" />
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -182,48 +198,49 @@ export default {
   name: "SbQrCodeEditor",
   props: {
     qrCode: String,
+    canvasWidth: {
+      type: Number,
+      default: 350,
+    },
+    canvasHeight: {
+      type: Number,
+      default: 450,
+    },
   },
   data: function () {
     return {
-      show: false,
+      textModalShown: false,
       canvas: null,
-      canvasWidth: 350,
-      canvasHeight: 450,
       selectedObject: null,
       images: [],
       texts: [],
       bgColor: "#FFFFFF",
       bgImage: null,
-      fontSizes: [
-        26,
-        28,
-        30,
-        32,
-        34,
-        36,
-        38,
-        39,
-        40,
-      ],
+      fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
     };
   },
   methods: {
-    imageSelected (obj) {
+    centerQrCode(e) {
+      if (e.target.id === "qr-code") {
+        this.centerObject("qr-code");
+      }
+    },
+    imageSelected(obj) {
       const selectedObject = this.images.filter((image) => image.id === obj.id);
       this.selectedObject = selectedObject;
     },
-    textSelected (obj) {
+    textSelected(obj) {
       const selectedObject = this.texts.filter((text) => text.id === obj.id);
       this.selectedObject = selectedObject;
     },
     updateCanvas(event) {
       this.canvas = event;
     },
-    showModal: function () {
-      this.show = !this.show;
+    showTextModal: function () {
+      this.textModalShown = true;
     },
-    cancelModal: function () {
-      this.show = false;
+    cancelTextModal: function () {
+      this.textModalShown = false;
     },
     saveQRcode: function (type) {
       const doc = new jsPDF();
@@ -235,15 +252,15 @@ export default {
         top: 0,
         format: "png",
       });
-      if(type === "image"){
+      if (type === "image") {
         const link = document.createElement("a");
         link.download = "your-qr.png";
         link.href = dataURL;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      }else{
-        doc.addImage(dataURL, 'png', 10, 10);
+      } else {
+        doc.addImage(dataURL, "png", 10, 10);
         doc.save("your-qr.pdf");
       }
     },
@@ -255,33 +272,33 @@ export default {
     },
     resizeImage: (base64Str, maxWidth, maxHeight) => {
       return new Promise((resolve) => {
-        let img = new Image()
-        img.src = base64Str
+        let img = new Image();
+        img.src = base64Str;
         img.onload = () => {
-          let canvas = document.createElement('canvas')
-          const MAX_WIDTH = maxWidth
-          const MAX_HEIGHT = maxHeight
-          let width = img.width
-          let height = img.height
+          let canvas = document.createElement("canvas");
+          const MAX_WIDTH = maxWidth;
+          const MAX_HEIGHT = maxHeight;
+          let width = img.width;
+          let height = img.height;
 
           if (width > height) {
             if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width
-              width = MAX_WIDTH
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
             }
           } else {
             if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height
-              height = MAX_HEIGHT
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
             }
           }
-          canvas.width = width
-          canvas.height = height
-          let ctx = canvas.getContext('2d')
-          ctx.drawImage(img, 0, 0, width, height)
-          resolve(canvas.toDataURL())
-        }
-      })
+          canvas.width = width;
+          canvas.height = height;
+          let ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL());
+        };
+      });
     },
     onFilePicked(event) {
       const vm = this;
@@ -290,16 +307,22 @@ export default {
       const fileReader = new FileReader();
       fileReader.readAsDataURL(files[0]);
       fileReader.addEventListener("load", () => {
-       this.resizeImage(fileReader.result, this.canvasWidth-50, this.canvasHeight-50).then((result)=>{
-          vm.images = [
-            ...vm.images,
-            {
-              id: `img-${filename}`,
-              url: result,
-            },
-          ];
-          //console.log(result)
-       }).catch(err => console.log(err))
+        this.resizeImage(
+          fileReader.result,
+          this.canvasWidth - 50,
+          this.canvasHeight - 50
+        )
+          .then((result) => {
+            vm.images = [
+              ...vm.images,
+              {
+                id: `img-${filename}`,
+                url: result,
+              },
+            ];
+            //console.log(result)
+          })
+          .catch((err) => console.log(err));
       });
     },
     onbgFilePicked(event) {
@@ -307,16 +330,16 @@ export default {
       const filename = files[0].name;
       const fileReader = new FileReader();
       fileReader.readAsDataURL(files[0]);
-      const canvas = this.canvas
-      const width = this.canvasWidth
-      const height = this.canvasHeight
+      const canvas = this.canvas;
+      const width = this.canvasWidth;
+      const height = this.canvasHeight;
       fileReader.addEventListener("load", () => {
-        fabric.Image.fromURL(fileReader.result, function(img) {
+        fabric.Image.fromURL(fileReader.result, function (img) {
           canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
             width,
             height,
-            originX: 'left',
-            originY: 'top'
+            originX: "left",
+            originY: "top",
           });
         });
         this.bgImage = {
@@ -328,9 +351,9 @@ export default {
     addText: function (e) {
       this.texts = [
         ...this.texts,
-        { id: 'text-'+this.texts.length + 1, ...this.texts },
+        { id: "text-" + this.texts.length + 1, ...this.texts },
       ];
-      this.show = false;
+      this.textModalShown = false;
       e.target.reset();
     },
     deleteText: function (id) {
@@ -340,24 +363,28 @@ export default {
     },
     deleteImage: function (id) {
       const remainingArr = this.images.filter((image) => image.id != id);
-      console.log("remainingArr", remainingArr)
+      console.log("remainingArr", remainingArr);
       this.images = remainingArr;
       this.selectedObject = null;
     },
-    deleteBgImage: function(id) {
-      if(id === this.bgImage.id){
+    deleteBgImage: function (id) {
+      if (id === this.bgImage.id) {
         this.bgImage = null;
         this.canvas.backgroundImage = 0;
         this.canvas.renderAll();
       }
     },
-    moveBack (id) {
-      const selectedObj = this.canvas.getObjects().find(obj => obj.id === id);
+    moveBack(id) {
+      const selectedObj = this.canvas.getObjects().find((obj) => obj.id === id);
       this.canvas.sendToBack(selectedObj);
     },
-    moveFront (id) {
-      const selectedObj = this.canvas.getObjects().find(obj => obj.id === id);
+    moveFront(id) {
+      const selectedObj = this.canvas.getObjects().find((obj) => obj.id === id);
       this.canvas.bringToFront(selectedObj);
+    },
+    centerObject(id) {
+      const selectedObj = this.canvas.getObjects().find((obj) => obj.id === id);
+      selectedObj.center();
     },
     setCanvasColor: function (e) {
       this.bgColor = e.target.value;
@@ -371,25 +398,43 @@ export default {
 };
 </script>
 <style scoped>
-.qrEditor {
-  margin: 10px;
-  border: 1px dashed #000;
-}
 .container {
+  margin: 0px;
+  padding: 0px;
+  color: #000;
+}
+.container .topBar {
+  padding-left: 20px;
+  color: #fff;
+  background: #1e1f22;
+}
+.topBar button {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 15px;
+}
+
+.topBar button:hover {
+  background: #000;
+}
+.container .content {
   display: flex;
   height: 100vh;
   margin: 0px;
   padding: 0px;
 }
+.qrEditor {
+  margin: 10px;
+  border: 1px dashed #000;
+}
 .sidebar {
-  border-right: 1px solid #ccc;
-  background: #1e1f22;
-  color: #fff;
-  padding: 25px;
+  padding: 15px;
   height: 100%;
   width: 350px;
 }
 .main {
+  background: #eee;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -398,13 +443,9 @@ export default {
   width: 100%;
   height: 100%;
 }
-.layers {
-  margin-top: 10px;
-}
-.layers h2,
+.actions h2,
 .document-controls h2 {
   font-size: 14px;
-  color: #fff;
   margin-bottom: 5px;
 }
 .document-controls input[type="number"] {
@@ -412,7 +453,6 @@ export default {
   padding: 5px;
 }
 .document-controls label {
-  color: #fff;
   font-size: 12px;
   padding: 7px 0;
   display: block;
@@ -457,13 +497,11 @@ export default {
 .buttons button {
   border: none;
   outline: none;
-  background: #1e1f22;
-  color: #fff;
   padding: 10px 15px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
 }
-.buttons button+button {
+.buttons button + button {
   margin-left: 10px;
 }
 .actions .add:hover,
@@ -478,7 +516,7 @@ export default {
 .text-editor input[type="text"] {
   width: 300px;
   margin: 10px 0;
-  border: 1px solid #EEE;
+  border: 1px solid #eee;
   padding: 10px;
 }
 .text-edit-options select + select {
@@ -523,14 +561,5 @@ a.close-item {
   color: rgb(59, 59, 59);
   background-color: rgb(59, 59, 59);
   margin: 15px 0;
-}
-.background-controls {
-    display: flex;
-}
-.background-controls div + div {
-  margin-left: 10px;
-}
-.background-controls button {
-  cursor: pointer;
 }
 </style>
