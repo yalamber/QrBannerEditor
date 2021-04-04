@@ -29,29 +29,36 @@
       <div class="sidebar sidebar1" v-if="selectedObject">
         <div class="actions">
           <h2>Action</h2>
-          <div v-for="item in selectedObject" :key="item.id" class="item">
-            <div v-if="item.text" class="text">
-              {{ item.text }}
+          <div v-if="selectedObject" class="item">
+            <div v-if="selectedObject.text" class="text">
+              {{ selectedObject.text }}
             </div>
-            <div v-if="item.url" class="thumb">
-              <img v-bind:src="item.url" />
+            <div v-if="selectedObject.url" class="thumb">
+              <img v-bind:src="selectedObject.url" />
             </div>
-            <div>
-              <a @click.prevent="moveBack(item.id)">Back</a>
-              <a @click.prevent="moveFront(item.id)">Front</a>
-            </div>
-            <div v-if="item.url">
-              <a @click.prevent="deleteImage(item.id)">
-                <font-awesome-icon icon="trash"
-              /></a>
-            </div>
-            <div v-if="item.text">
-              <a @click.prevent="deleteText(item.id)">
+            <div class="action-items">
+              <a @click.prevent="moveBack(selectedObject.id)">
+                <font-awesome-icon icon="caret-square-up" />
+              </a>
+              <a @click.prevent="moveFront(selectedObject.id)">
+                <font-awesome-icon icon="caret-square-down" />
+              </a>
+              <a
+                v-if="selectedObject.url"
+                @click.prevent="deleteImage(selectedObject.id)"
+              >
+                <font-awesome-icon icon="trash" />
+              </a>
+              <a
+                v-if="selectedObject.text"
+                @click.prevent="deleteText(selectedObject.id)"
+              >
                 <font-awesome-icon icon="trash" />
               </a>
             </div>
           </div>
           <div class="item" v-if="bgImage">
+            <h2>Background Image</h2>
             <div class="thumb">
               <img v-bind:src="bgImage.url" />
             </div>
@@ -226,11 +233,11 @@ export default {
       }
     },
     imageSelected(obj) {
-      const selectedObject = this.images.filter((image) => image.id === obj.id);
+      const selectedObject = this.images.find((image) => image.id === obj.id);
       this.selectedObject = selectedObject;
     },
     textSelected(obj) {
-      const selectedObject = this.texts.filter((text) => text.id === obj.id);
+      const selectedObject = this.texts.find((text) => text.id === obj.id);
       this.selectedObject = selectedObject;
     },
     updateCanvas(event) {
@@ -414,10 +421,6 @@ export default {
   border-radius: 0;
   padding: 15px;
 }
-
-.topBar button:hover {
-  background: #000;
-}
 .container .content {
   display: flex;
   height: 100vh;
@@ -457,6 +460,9 @@ export default {
   padding: 7px 0;
   display: block;
 }
+.action-items a {
+  margin: 5px;
+}
 
 /* Modal */
 .modal {
@@ -490,8 +496,6 @@ export default {
   cursor: pointer;
 }
 .actions {
-  display: flex;
-  align-items: flex-end;
 }
 .actions .add,
 .buttons button {
@@ -503,10 +507,6 @@ export default {
 }
 .buttons button + button {
   margin-left: 10px;
-}
-.actions .add:hover,
-.buttons button:hover {
-  background: #000;
 }
 .text-edit-options select,
 .text-editor input[type="text"] {
@@ -531,10 +531,8 @@ a.close-item {
 }
 .item {
   display: flex;
-  color: #fff;
   justify-content: space-between;
   align-items: center;
-  background: #696565;
   margin: 5px 0;
   padding: 5px 7px;
 }
