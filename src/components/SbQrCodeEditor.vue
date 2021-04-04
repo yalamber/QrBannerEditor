@@ -250,8 +250,20 @@ export default {
       this.textModalShown = false;
     },
     saveQRcode: function (type) {
-      const doc = new jsPDF();
+      let collisionDetected = false
       const canvas = this.canvas;
+      const qrCodeObject = this.canvas
+        .getObjects()
+        .find((obj) => obj.id === 'qr-code');
+      qrCodeObject.setCoords();
+      canvas.forEachObject(function (obj) {
+        if (obj.id !== 'qr-code' && qrCodeObject.intersectsWithObject(obj)) {
+          collisionDetected = true
+        }
+      });
+      if (collisionDetected && !confirm('Some object might interfere with QR code, Do you want to continue?')){
+        return;
+      }
       const dataURL = canvas.toDataURL({
         width: this.canvasWidth,
         height: this.canvasHeight,
@@ -267,6 +279,7 @@ export default {
         link.click();
         document.body.removeChild(link);
       } else {
+        const doc = new jsPDF();
         doc.addImage(dataURL, "png", 10, 10);
         doc.save("your-qr.pdf");
       }
