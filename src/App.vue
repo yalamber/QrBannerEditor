@@ -22,12 +22,9 @@ export default {
   },
   created: function () {
     const vm = this
-    QRCode.toDataURL('This is testing', function (err, url) {
+    QRCode.toDataURL('This is testing', { margin: 2, width: 150, height: 150 }, function (err, url) {
       vm.qrCode = url
     })
-  },
-  methods: {
-   
   }
 }
 </script>

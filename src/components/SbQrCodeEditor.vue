@@ -26,7 +26,7 @@
       </div>
     </div>
     <div class="content">
-      <div class="sidebar sidebar1" v-if="selectedObject">
+      <div class="sidebar sidebar1" v-if="selectedObject || bgImage">
         <div class="actions">
           <h2>Action</h2>
           <div v-if="selectedObject" class="item">
@@ -38,33 +38,37 @@
             </div>
             <div class="action-items">
               <a @click.prevent="moveFront(selectedObject.id)">
-                <font-awesome-icon icon="caret-square-up" />
+                <font-awesome-icon title="Move Front" icon="caret-square-up" />
               </a>
               <a @click.prevent="moveBack(selectedObject.id)">
-                <font-awesome-icon icon="caret-square-down" />
+                <font-awesome-icon title="Move Back" icon="caret-square-down" />
               </a>
               <a
                 v-if="selectedObject.url"
                 @click.prevent="deleteImage(selectedObject.id)"
               >
-                <font-awesome-icon icon="trash" />
+                <font-awesome-icon title="Delete" icon="trash" />
               </a>
               <a
                 v-if="selectedObject.text"
                 @click.prevent="deleteText(selectedObject.id)"
               >
-                <font-awesome-icon icon="trash" />
+                <font-awesome-icon title="Delete" icon="trash" />
               </a>
             </div>
           </div>
           <div class="item" v-if="bgImage">
-            <h2>Background Image</h2>
+            <div class="text">
+              Background Image
+            </div>
             <div class="thumb">
               <img v-bind:src="bgImage.url" />
             </div>
-            <a @click.prevent="deleteBgImage(bgImage.id)"
-              ><font-awesome-icon icon="trash"
-            /></a>
+            <div class="action-items">
+              <a @click.prevent="deleteBgImage(bgImage.id)"
+                ><font-awesome-icon icon="trash"
+              /></a>
+            </div>
           </div>
         </div>
       </div>
@@ -340,7 +344,6 @@ export default {
                 url: result,
               },
             ];
-            //console.log(result)
           })
           .catch((err) => console.log(err));
       });
@@ -355,13 +358,29 @@ export default {
       const height = this.canvasHeight;
       fileReader.addEventListener("load", () => {
         fabric.Image.fromURL(fileReader.result, function (img) {
+          console.log("canvasWidth", width)
+          console.log("canvasHeight", height)
+          console.log("imgwidth",  )
+          console.log("imgheight",  height/img.height)
+          const newWidth = width/img.width;
+          const newHeight = height/img.height;
           canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-            width,
-            height,
-            originX: "left",
-            originY: "top",
+            
+            scaleX : newWidth,   //new update
+            scaleY: newHeight,   //new update
+            
           });
         });
+        
+        // this.resizeImage(
+        //   fileReader.result,
+        //   this.canvasWidth,
+        //   this.canvasHeight
+        // )
+        //   .then((result) => {
+        //     canvas.setBackgroundImage(result, canvas.renderAll.bind(canvas), {});
+        //   })
+        //   .catch((err) => console.log(err));
         this.bgImage = {
           url: fileReader.result,
           id: `img-${filename}`,
@@ -507,8 +526,7 @@ export default {
 .buttons-wrapper button {
   font-size: 12px;
   cursor: pointer;
-}
-.actions {
+  outline: none;
 }
 .actions .add,
 .buttons button {
