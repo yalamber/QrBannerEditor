@@ -207,11 +207,11 @@ export default {
     qrCode: String,
     canvasWidth: {
       type: Number,
-      default: 350,
+      default: 450,
     },
     canvasHeight: {
       type: Number,
-      default: 450,
+      default: 550,
     },
   },
   data: function () {
