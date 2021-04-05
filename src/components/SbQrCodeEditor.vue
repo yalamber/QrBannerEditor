@@ -73,10 +73,10 @@
         <div class="actions" v-if="selectedObject || bgImage">
           <h2>Action</h2>
           <div v-if="selectedObject" class="item">
-            <div v-if="selectedObject.text" class="text">
+            <div class="text">
               {{ selectedObject.text }}
             </div>
-            <div v-if="selectedObject.url" class="thumb">
+            <div class="thumb">
               <img v-bind:src="selectedObject.url" />
             </div>
             <div class="action-items">
@@ -86,22 +86,13 @@
               <a @click.prevent="moveBack(selectedObject.id)">
                 <font-awesome-icon title="Move Back" icon="caret-square-down" />
               </a>
-              <a
-                v-if="selectedObject.url"
-                @click.prevent="deleteImage(selectedObject.id)"
-              >
-                <font-awesome-icon title="Delete" icon="trash" />
-              </a>
-              <a
-                v-if="selectedObject.text"
-                @click.prevent="deleteText(selectedObject.id)"
-              >
+              <a @click.prevent="deleteItem(selectedObject.id)">
                 <font-awesome-icon title="Delete" icon="trash" />
               </a>
             </div>
           </div>
           <div class="text-edit">
-            <form v-if="selectedObject.text" v-on:change.prevent="updateText">
+            <form v-if="selectedObject.id && selectedObject.type === 'text'" v-on:change="updateText">
               <select name="fontsize" v-model.number="selectedObject.fontsize">
                 <option :value="undefined">Font Size</option>
                 <option
@@ -180,7 +171,7 @@
             ></FabricImageFromURL>
             <FabricText
               :id="text.id"
-              v-for="text in texts"
+              v-for="text in items"
               :key="'text-key-' + text.id"
               :text="text.text"
               :fontSize="text.fontsize"
@@ -190,7 +181,7 @@
             ></FabricText>
             <FabricImageFromURL
               :id="img.id"
-              v-for="img in images"
+              v-for="img in items"
               :key="'img-key-' + img.id"
               :url="img.url"
               @selected="imageSelected"
@@ -208,7 +199,7 @@
         <h2>Add Text</h2>
         <form v-on:submit.prevent="addText">
           <div class="text-edit-options">
-            <select name="fontsize" v-model.number="texts.fontsize">
+            <select name="fontsize" v-model.number="items.fontsize">
               <option :value="undefined">Font Size</option>
               <option
                 v-for="(fontsizeItem, i) in fontSizes"
@@ -218,7 +209,7 @@
                 {{ fontsizeItem }}
               </option>
             </select>
-            <select name="fontweight" v-model.number="texts.fontweight">
+            <select name="fontweight" v-model.number="items.fontweight">
               <option :value="undefined">Font Weight</option>
               <option
                 v-for="(fontWeightItem, i) in fontWeights"
@@ -228,7 +219,7 @@
                 {{ fontWeightItem }}
               </option>
             </select>
-            <select name="fontfamily" v-model="texts.fontfamily">
+            <select name="fontfamily" v-model="items.fontfamily">
               <option value="undefined">Font Family</option>
               <option 
               v-for="(fontFamilyItem, i) in fontFamily" 
@@ -241,7 +232,7 @@
             placeholder="Text"
             name="text"
             class="text-field"
-            v-model="texts.text"
+            v-model="items.text"
           />
           <div class="actions">
             <input class="add" type="submit" value="Insert" />
@@ -275,8 +266,7 @@ export default {
       textModalShown: false,
       canvas: null,
       selectedObject: null,
-      images: [],
-      texts: [],
+      items: [],
       bgColor: "#FFFFFF",
       bgImage: null,
       fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
@@ -297,11 +287,11 @@ export default {
       }
     },
     imageSelected(obj) {
-      const selectedObject = this.images.find((image) => image.id === obj.id);
+      const selectedObject = this.items.find((image) => image.id === obj.id);
       this.selectedObject = selectedObject;
     },
     textSelected(obj) {
-      const selectedObject = this.texts.find((text) => text.id === obj.id);
+      const selectedObject = this.items.find((text) => text.id === obj.id);
       this.selectedObject = selectedObject;
     },
     updateCanvas(event) {
@@ -397,10 +387,11 @@ export default {
           this.canvasHeight - 50
         )
           .then((result) => {
-            vm.images = [
-              ...vm.images,
+            vm.items = [
+              ...vm.items,
               {
                 id: `img-${filename}`,
+                type: "image",
                 url: result,
               },
             ];
@@ -432,29 +423,27 @@ export default {
       });
     },
     addText: function (e) {
-      this.texts = [
-        ...this.texts,
-        { id: "text-" + this.texts.length + 1, ...this.texts },
+      this.items = [
+        ...this.items,
+        { 
+          id: "text-" + this.items.length + 1, 
+          type: "text",
+          ...this.items 
+        },
       ];
       this.textModalShown = false;
       e.target.reset();
     },
     updateText: function (e) {
-      this.canvas.getActiveObject().set("fontWeight", this.selectedObject.fontweight);
-      this.canvas.getActiveObject().set("fontSize", this.selectedObject.fontsize);
-      this.canvas.getActiveObject().set("fontFamily", this.selectedObject.fontfamily);
-      this.canvas.getActiveObject().set("text", this.selectedObject.text);
+      //this.canvas.getActiveObject().set("fontWeight", this.selectedObject.fontweight);
+      // this.canvas.getActiveObject().set("fontSize", this.selectedObject.fontsize);
+      // this.canvas.getActiveObject().set("fontFamily", this.selectedObject.fontfamily);
+      //this.canvas.getActiveObject().set("text", this.selectedObject.text);
       this.canvas.renderAll();
     },
-    deleteText: function (id) {
-      const remainingArr = this.texts.filter((text) => text.id != id);
-      this.texts = remainingArr;
-      this.selectedObject = null;
-    },
-    deleteImage: function (id) {
-      const remainingArr = this.images.filter((image) => image.id != id);
-      console.log("remainingArr", remainingArr);
-      this.images = remainingArr;
+    deleteItem: function (id) {
+      const remainingArr = this.items.filter((text) => text.id != id);
+      this.items = remainingArr;
       this.selectedObject = null;
     },
     deleteBgImage: function (id) {
