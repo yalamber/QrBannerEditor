@@ -26,88 +26,7 @@
       </div>
     </div>
     <div class="content">
-      <div class="sidebar sidebar1" v-if="selectedObject || bgImage">
-        <div class="actions">
-          <h2>Action</h2>
-          <div v-if="selectedObject" class="item">
-            <div v-if="selectedObject.text" class="text">
-              {{ selectedObject.text }}
-            </div>
-            <div v-if="selectedObject.url" class="thumb">
-              <img v-bind:src="selectedObject.url" />
-            </div>
-            <div class="action-items">
-              <a @click.prevent="moveFront(selectedObject.id)">
-                <font-awesome-icon title="Move Front" icon="caret-square-up" />
-              </a>
-              <a @click.prevent="moveBack(selectedObject.id)">
-                <font-awesome-icon title="Move Back" icon="caret-square-down" />
-              </a>
-              <a
-                v-if="selectedObject.url"
-                @click.prevent="deleteImage(selectedObject.id)"
-              >
-                <font-awesome-icon title="Delete" icon="trash" />
-              </a>
-              <a
-                v-if="selectedObject.text"
-                @click.prevent="deleteText(selectedObject.id)"
-              >
-                <font-awesome-icon title="Delete" icon="trash" />
-              </a>
-            </div>
-          </div>
-          <div class="item" v-if="bgImage">
-            <div class="text">
-              Background Image
-            </div>
-            <div class="thumb">
-              <img v-bind:src="bgImage.url" />
-            </div>
-            <div class="action-items">
-              <a @click.prevent="deleteBgImage(bgImage.id)"
-                ><font-awesome-icon icon="trash"
-              /></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="main">
-        <div class="qrEditor">
-          <FabricCanvas
-            :height="parseInt(canvasHeight)"
-            :width="parseInt(canvasWidth)"
-            :backgroundColor="bgColor"
-            :preserveObjectStacking="true"
-            @canvas-updated="updateCanvas"
-            @object-added="centerQrCode"
-          >
-            <FabricImageFromURL
-              ref="qrCodeRef"
-              id="qr-code"
-              key="'qr-code'"
-              :url="qrCode"
-            ></FabricImageFromURL>
-            <FabricText
-              :id="text.id"
-              v-for="text in texts"
-              :key="'text-key-' + text.id"
-              :text="text.text"
-              :fontSize="text.fontsize"
-              :fontFamily="text.fontfamily"
-              @selected="textSelected"
-            ></FabricText>
-            <FabricImageFromURL
-              :id="img.id"
-              v-for="img in images"
-              :key="'img-key-' + img.id"
-              :url="img.url"
-              @selected="imageSelected"
-            ></FabricImageFromURL>
-          </FabricCanvas>
-        </div>
-      </div>
-      <div class="sidebar sidebar2">
+      <div class="sidebar sidebar1">
         <div class="document-controls">
           <h2>Set Document Size</h2>
           <label
@@ -150,6 +69,90 @@
               @change="onbgFilePicked"
             />
           </div>
+        </div>
+        <div class="actions" v-if="selectedObject || bgImage">
+          <h2>Action</h2>
+          <div v-if="selectedObject" class="item">
+            <div v-if="selectedObject.text" class="text">
+              {{ selectedObject.text }}
+            </div>
+            <div v-if="selectedObject.url" class="thumb">
+              <img v-bind:src="selectedObject.url" />
+            </div>
+            <div class="action-items">
+              <a @click.prevent="moveFront(selectedObject.id)">
+                <font-awesome-icon title="Move Front" icon="caret-square-up" />
+              </a>
+              <a @click.prevent="moveBack(selectedObject.id)">
+                <font-awesome-icon title="Move Back" icon="caret-square-down" />
+              </a>
+              <a
+                v-if="selectedObject.url"
+                @click.prevent="deleteImage(selectedObject.id)"
+              >
+                <font-awesome-icon title="Delete" icon="trash" />
+              </a>
+              <a
+                v-if="selectedObject.text"
+                @click.prevent="deleteText(selectedObject.id)"
+              >
+                <font-awesome-icon title="Delete" icon="trash" />
+              </a>
+            </div>
+          </div>
+          <div class="text-edit">
+            <form v-if="selectedObject.text" v-on:change.prevent="updateText">
+              <select name="fontsize" v-model.number="selectedObject.fontsize">
+                <option :value="undefined">Font Size</option>
+                <option
+                  v-for="(fontsizeItem, i) in fontSizes"
+                  :key="i"
+                  v-bind:value="fontsizeItem"
+                >
+                  {{ fontsizeItem }}
+                </option>
+              </select>
+              <select name="fontweight" v-model.number="selectedObject.fontweight">
+                <option :value="undefined">Font Weight</option>
+                <option
+                  v-for="(fontWeightItem, i) in fontWeights"
+                  :key="i"
+                  v-bind:value="fontWeightItem"
+                >
+                  {{ fontWeightItem }}
+                </option>
+              </select>
+              <select name="fontfamily" v-model="selectedObject.fontfamily">
+                <option value="undefined">Font Family</option>
+                <option 
+                v-for="(fontFamilyItem, i) in fontFamily" 
+                :key="i"
+                v-bind:value="fontFamilyItem">{{fontFamilyItem}}</option>
+              </select>
+              <input
+                type="text"
+                v-bind:placeholder="selectedObject.text"
+                name="text"
+                class="text-field"
+                v-model="selectedObject.text"
+              />
+            </form>
+          </div>
+          <div class="item" v-if="bgImage">
+            <div class="text">
+              Background Image
+            </div>
+            <div class="thumb">
+              <img v-bind:src="bgImage.url" />
+            </div>
+            <div class="action-items">
+              <a @click.prevent="deleteBgImage(bgImage.id)"
+                ><font-awesome-icon icon="trash"
+              /></a>
+            </div>
+          </div>
+        </div>
+        <div class="document-controls">
           <div class="export-buttons">
             <h2>Save as <font-awesome-icon icon="save" /></h2>
             <button @click.prevent="saveQRcode('image')">Image</button>
@@ -158,6 +161,44 @@
           </div>
         </div>
       </div>
+      <div class="main">
+        <div class="qrEditor">
+          <FabricCanvas
+            :height="parseInt(canvasHeight)"
+            :width="parseInt(canvasWidth)"
+            :backgroundColor="bgColor"
+            :preserveObjectStacking="true"
+            @canvas-updated="updateCanvas"
+            @object-added="centerQrCode"
+            :allowAutoScrolling="true"
+          >
+            <FabricImageFromURL
+              ref="qrCodeRef"
+              id="qr-code"
+              key="'qr-code'"
+              :url="qrCode"
+            ></FabricImageFromURL>
+            <FabricText
+              :id="text.id"
+              v-for="text in texts"
+              :key="'text-key-' + text.id"
+              :text="text.text"
+              :fontSize="text.fontsize"
+              :fontFamily="text.fontfamily"
+              :fontWeight="text.fontweight"
+              @selected="textSelected"
+            ></FabricText>
+            <FabricImageFromURL
+              :id="img.id"
+              v-for="img in images"
+              :key="'img-key-' + img.id"
+              :url="img.url"
+              @selected="imageSelected"
+            ></FabricImageFromURL>
+          </FabricCanvas>
+        </div>
+      </div>
+     
     </div>
     <div class="modal" v-if="textModalShown">
       <div class="text-editor">
@@ -170,18 +211,29 @@
             <select name="fontsize" v-model.number="texts.fontsize">
               <option :value="undefined">Font Size</option>
               <option
-                v-for="(fontSize, i) in fontSizes"
+                v-for="(fontsizeItem, i) in fontSizes"
                 :key="i"
-                v-bind:value="fontSize"
+                v-bind:value="fontsizeItem"
               >
-                {{ fontSize }}
+                {{ fontsizeItem }}
+              </option>
+            </select>
+            <select name="fontweight" v-model.number="texts.fontweight">
+              <option :value="undefined">Font Weight</option>
+              <option
+                v-for="(fontWeightItem, i) in fontWeights"
+                :key="i"
+                v-bind:value="fontWeightItem"
+              >
+                {{ fontWeightItem }}
               </option>
             </select>
             <select name="fontfamily" v-model="texts.fontfamily">
               <option value="undefined">Font Family</option>
-              <option value="Tahoma">Tahoma</option>
-              <option value="Trebuchet MS">Trebuchet MS</option>
-              <option value="Arial">Arial</option>
+              <option 
+              v-for="(fontFamilyItem, i) in fontFamily" 
+              :key="i"
+              v-bind:value="fontFamilyItem">{{fontFamilyItem}}</option>
             </select>
           </div>
           <input
@@ -225,9 +277,18 @@ export default {
       selectedObject: null,
       images: [],
       texts: [],
+      edits: {},
       bgColor: "#FFFFFF",
       bgImage: null,
       fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
+      fontWeights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+      fontFamily: [
+        'Arial',
+        'Courier New',
+        'Tahoma',
+        'Trebuchet MS',
+        'Verdana'
+      ]
     };
   },
   methods: {
@@ -358,29 +419,13 @@ export default {
       const height = this.canvasHeight;
       fileReader.addEventListener("load", () => {
         fabric.Image.fromURL(fileReader.result, function (img) {
-          console.log("canvasWidth", width)
-          console.log("canvasHeight", height)
-          console.log("imgwidth",  )
-          console.log("imgheight",  height/img.height)
           const newWidth = width/img.width;
           const newHeight = height/img.height;
           canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-            
-            scaleX : newWidth,   //new update
-            scaleY: newHeight,   //new update
-            
+            scaleX : newWidth,
+            scaleY: newHeight,
           });
         });
-        
-        // this.resizeImage(
-        //   fileReader.result,
-        //   this.canvasWidth,
-        //   this.canvasHeight
-        // )
-        //   .then((result) => {
-        //     canvas.setBackgroundImage(result, canvas.renderAll.bind(canvas), {});
-        //   })
-        //   .catch((err) => console.log(err));
         this.bgImage = {
           url: fileReader.result,
           id: `img-${filename}`,
@@ -394,6 +439,13 @@ export default {
       ];
       this.textModalShown = false;
       e.target.reset();
+    },
+    updateText: function (e) {
+      this.canvas.getActiveObject().set("fontWeight", this.selectedObject.fontweight);
+      this.canvas.getActiveObject().set("fontSize", this.selectedObject.fontsize);
+      this.canvas.getActiveObject().set("fontFamily", this.selectedObject.fontfamily);
+      this.canvas.getActiveObject().set("text", this.selectedObject.text);
+      this.canvas.renderAll();
     },
     deleteText: function (id) {
       const remainingArr = this.texts.filter((text) => text.id != id);
@@ -591,4 +643,23 @@ a.close-item {
   background-color: rgb(59, 59, 59);
   margin: 15px 0;
 }
+.text-edit input[type="text"] {
+  border: solid 1px #eee;
+  padding: 10px 2%;
+  width: 94%;
+  outline: none;
+  margin-top: 10px;
+}
+.text-edit select {
+  border: solid 1px #eee;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 10px;
+  width: 50%;
+  outline: none;
+}
+.text-edit select:nth-child(3) {
+  width: 100%;
+}
+
 </style>
