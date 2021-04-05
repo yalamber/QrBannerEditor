@@ -277,7 +277,6 @@ export default {
       selectedObject: null,
       images: [],
       texts: [],
-      edits: {},
       bgColor: "#FFFFFF",
       bgImage: null,
       fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
