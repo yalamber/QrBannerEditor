@@ -73,10 +73,10 @@
         <div class="actions" v-if="selectedObject || bgImage">
           <h2>Action</h2>
           <div v-if="selectedObject" class="item">
-            <div class="text">
+            <div class="text" v-if="selectedObject.type === 'text'">
               {{ selectedObject.text }}
             </div>
-            <div class="thumb">
+            <div class="thumb" v-if="selectedObject.type === 'image'">
               <img v-bind:src="selectedObject.url" />
             </div>
             <div class="action-items">
@@ -92,7 +92,10 @@
             </div>
           </div>
           <div class="text-edit">
-            <form v-if="selectedObject.id && selectedObject.type === 'text'" v-on:change="updateText">
+            <form
+              v-if="selectedObject.id && selectedObject.type === 'text'"
+              v-on:change="updateItem"
+            >
               <select name="fontsize" v-model.number="selectedObject.fontsize">
                 <option :value="undefined">Font Size</option>
                 <option
@@ -103,7 +106,10 @@
                   {{ fontsizeItem }}
                 </option>
               </select>
-              <select name="fontweight" v-model.number="selectedObject.fontweight">
+              <select
+                name="fontweight"
+                v-model.number="selectedObject.fontweight"
+              >
                 <option :value="undefined">Font Weight</option>
                 <option
                   v-for="(fontWeightItem, i) in fontWeights"
@@ -115,10 +121,13 @@
               </select>
               <select name="fontfamily" v-model="selectedObject.fontfamily">
                 <option value="undefined">Font Family</option>
-                <option 
-                v-for="(fontFamilyItem, i) in fontFamily" 
-                :key="i"
-                v-bind:value="fontFamilyItem">{{fontFamilyItem}}</option>
+                <option
+                  v-for="(fontFamilyItem, i) in fontFamily"
+                  :key="i"
+                  v-bind:value="fontFamilyItem"
+                >
+                  {{ fontFamilyItem }}
+                </option>
               </select>
               <input
                 type="text"
@@ -130,9 +139,7 @@
             </form>
           </div>
           <div class="item" v-if="bgImage">
-            <div class="text">
-              Background Image
-            </div>
+            <div class="text">Background Image</div>
             <div class="thumb">
               <img v-bind:src="bgImage.url" />
             </div>
@@ -169,27 +176,28 @@
               key="'qr-code'"
               :url="qrCode"
             ></FabricImageFromURL>
-            <FabricText
-              :id="text.id"
-              v-for="text in items"
-              :key="'text-key-' + text.id"
-              :text="text.text"
-              :fontSize="text.fontsize"
-              :fontFamily="text.fontfamily"
-              :fontWeight="text.fontweight"
-              @selected="textSelected"
-            ></FabricText>
-            <FabricImageFromURL
-              :id="img.id"
-              v-for="img in items"
-              :key="'img-key-' + img.id"
-              :url="img.url"
-              @selected="imageSelected"
-            ></FabricImageFromURL>
+            <template v-for="item in items">
+              <FabricText
+                v-if="item.type === 'text'"
+                :id="item.id"
+                :key="'text-key-' + item.id"
+                :text="item.text"
+                :fontSize="item.fontsize"
+                :fontFamily="item.fontfamily"
+                :fontWeight="item.fontweight"
+                @selected="textSelected"
+              ></FabricText>
+              <FabricImageFromURL
+                v-if="item.type === 'image'"
+                :id="item.id"
+                :key="'img-key-' + item.id"
+                :url="item.url"
+                @selected="imageSelected"
+              ></FabricImageFromURL>
+            </template>
           </FabricCanvas>
         </div>
       </div>
-     
     </div>
     <div class="modal" v-if="textModalShown">
       <div class="text-editor">
@@ -221,10 +229,13 @@
             </select>
             <select name="fontfamily" v-model="items.fontfamily">
               <option value="undefined">Font Family</option>
-              <option 
-              v-for="(fontFamilyItem, i) in fontFamily" 
-              :key="i"
-              v-bind:value="fontFamilyItem">{{fontFamilyItem}}</option>
+              <option
+                v-for="(fontFamilyItem, i) in fontFamily"
+                :key="i"
+                v-bind:value="fontFamilyItem"
+              >
+                {{ fontFamilyItem }}
+              </option>
             </select>
           </div>
           <input
@@ -271,13 +282,7 @@ export default {
       bgImage: null,
       fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
       fontWeights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
-      fontFamily: [
-        'Arial',
-        'Courier New',
-        'Tahoma',
-        'Trebuchet MS',
-        'Verdana'
-      ]
+      fontFamily: ["Arial", "Courier New", "Tahoma", "Trebuchet MS", "Verdana"],
     };
   },
   methods: {
@@ -304,18 +309,23 @@ export default {
       this.textModalShown = false;
     },
     saveQRcode: function (type) {
-      let collisionDetected = false
+      let collisionDetected = false;
       const canvas = this.canvas;
       const qrCodeObject = this.canvas
         .getObjects()
-        .find((obj) => obj.id === 'qr-code');
+        .find((obj) => obj.id === "qr-code");
       qrCodeObject.setCoords();
       canvas.forEachObject(function (obj) {
-        if (obj.id !== 'qr-code' && qrCodeObject.intersectsWithObject(obj)) {
-          collisionDetected = true
+        if (obj.id !== "qr-code" && qrCodeObject.intersectsWithObject(obj)) {
+          collisionDetected = true;
         }
       });
-      if (collisionDetected && !confirm('Some object might interfere with QR code, Do you want to continue?')){
+      if (
+        collisionDetected &&
+        !confirm(
+          "Some object might interfere with QR code, Do you want to continue?"
+        )
+      ) {
         return;
       }
       const dataURL = canvas.toDataURL({
@@ -409,10 +419,10 @@ export default {
       const height = this.canvasHeight;
       fileReader.addEventListener("load", () => {
         fabric.Image.fromURL(fileReader.result, function (img) {
-          const newWidth = width/img.width;
-          const newHeight = height/img.height;
+          const newWidth = width / img.width;
+          const newHeight = height / img.height;
           canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-            scaleX : newWidth,
+            scaleX: newWidth,
             scaleY: newHeight,
           });
         });
@@ -425,21 +435,38 @@ export default {
     addText: function (e) {
       this.items = [
         ...this.items,
-        { 
-          id: "text-" + this.items.length + 1, 
+        {
+          id: "text-" + this.items.length + 1,
           type: "text",
-          ...this.items 
+          ...this.items,
         },
       ];
       this.textModalShown = false;
       e.target.reset();
     },
-    updateText: function () {
-      //this.canvas.getActiveObject().set("fontWeight", this.selectedObject.fontweight);
-      // this.canvas.getActiveObject().set("fontSize", this.selectedObject.fontsize);
-      // this.canvas.getActiveObject().set("fontFamily", this.selectedObject.fontfamily);
-      //this.canvas.getActiveObject().set("text", this.selectedObject.text);
-      this.canvas.renderAll();
+    updateItem: function () {
+      console.log(this.selectedObject);
+      if (this.selectedObject) {
+        const itemId = this.selectedObject.id;
+        switch (this.selectedObject.type) {
+          default:
+            console.log("Need Item type to update");
+            break;
+          case "image":
+            break;
+          case "text":
+            this.items = this.items.map((item) => {
+              if (item.id === itemId) {
+                return {
+                  ...this.selectedObject,
+                };
+              }
+              return item;
+            });
+            console.log(this.items);
+            break;
+        }
+      }
     },
     deleteItem: function (id) {
       const remainingArr = this.items.filter((text) => text.id != id);
@@ -649,5 +676,4 @@ a.close-item {
 .text-edit select:nth-child(3) {
   width: 100%;
 }
-
 </style>
