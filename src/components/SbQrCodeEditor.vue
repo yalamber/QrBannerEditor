@@ -95,6 +95,7 @@
             <form
               v-if="selectedItem.id && selectedItem.type === 'text'"
               v-on:change.prevent="updateItem"
+              v-on:keyup.prevent="updateItem"
             >
               <select name="fontsize" v-model.number="selectedItem.fontsize">
                 <option :value="undefined">Font Size</option>
@@ -129,6 +130,8 @@
                   {{ fontFamilyItem }}
                 </option>
               </select>
+              <label>Font Color</label>
+              <input type="color" v-model="selectedItem.fontcolor" v-bind="selectedItem.fontcolor" name="fontcolor" />
               <input
                 type="text"
                 v-bind:placeholder="selectedItem.text"
@@ -185,6 +188,7 @@
                 :fontSize="item.fontsize"
                 :fontFamily="item.fontfamily"
                 :fontWeight="item.fontweight"
+                :fill="item.fontcolor"
                 @selected="itemSelected"
               ></FabricText>
               <FabricImageFromURL
@@ -237,6 +241,7 @@
                 {{ fontFamilyItem }}
               </option>
             </select>
+            <input type="color" v-model="items.fontcolor" name="fontcolor" />
           </div>
           <input
             type="text"
@@ -590,6 +595,9 @@ export default {
   color: #000;
   margin: 0px 0 10px 0;
 }
+.text-editor input[type="color"] {
+  margin-left: 10px;
+}
 .buttons-wrapper button {
   font-size: 12px;
   cursor: pointer;
@@ -675,5 +683,11 @@ a.close-item {
 }
 .text-edit select:nth-child(3) {
   width: 100%;
+}
+.text-edit label {
+  font-size: 12px;
+  font-weight: bold;
+  display: block;
+  margin: 15px 0 10px 0;
 }
 </style>
