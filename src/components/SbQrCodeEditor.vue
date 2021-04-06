@@ -185,14 +185,14 @@
                 :fontSize="item.fontsize"
                 :fontFamily="item.fontfamily"
                 :fontWeight="item.fontweight"
-                @selected="textSelected"
+                @selected="itemSelected"
               ></FabricText>
               <FabricImageFromURL
                 v-if="item.type === 'image'"
                 :id="item.id"
                 :key="'img-key-' + item.id"
                 :url="item.url"
-                @selected="imageSelected"
+                @selected="itemSelected"
               ></FabricImageFromURL>
             </template>
           </FabricCanvas>
@@ -280,7 +280,7 @@ export default {
       items: [],
       bgColor: "#FFFFFF",
       bgImage: null,
-      fontSizes: [26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50],
+      fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
       fontWeights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
       fontFamily: ["Arial", "Courier New", "Tahoma", "Trebuchet MS", "Verdana"],
     };
@@ -291,13 +291,9 @@ export default {
         this.centerObject("qr-code");
       }
     },
-    imageSelected(obj) {
-      const selectedObject = this.items.find((image) => image.id === obj.id);
-      this.selectedObject = selectedObject;
-    },
-    textSelected(obj) {
-      const selectedObject = this.items.find((text) => text.id === obj.id);
-      this.selectedObject = selectedObject;
+    itemSelected(obj) {
+      const selectedItem = this.items.find((item) => item.id === obj.id);
+      this.selectedItem = selectedItem;
     },
     updateCanvas(event) {
       this.canvas = event;
@@ -458,7 +454,8 @@ export default {
             this.items = this.items.map((item) => {
               if (item.id === itemId) {
                 return {
-                  ...this.selectedObject,
+                  type: 'text',
+
                 };
               }
               return item;
