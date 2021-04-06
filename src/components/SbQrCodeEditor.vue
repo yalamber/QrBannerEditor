@@ -434,7 +434,7 @@ export default {
       this.textModalShown = false;
       e.target.reset();
     },
-    updateText: function (e) {
+    updateText: function () {
       //this.canvas.getActiveObject().set("fontWeight", this.selectedObject.fontweight);
       // this.canvas.getActiveObject().set("fontSize", this.selectedObject.fontsize);
       // this.canvas.getActiveObject().set("fontFamily", this.selectedObject.fontfamily);
