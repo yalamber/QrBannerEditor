@@ -70,33 +70,33 @@
             />
           </div>
         </div>
-        <div class="actions" v-if="selectedObject || bgImage">
+        <div class="actions" v-if="selectedItem || bgImage">
           <h2>Action</h2>
-          <div v-if="selectedObject" class="item">
-            <div class="text" v-if="selectedObject.type === 'text'">
-              {{ selectedObject.text }}
+          <div v-if="selectedItem" class="item">
+            <div class="text" v-if="selectedItem.type === 'text'">
+              {{ selectedItem.text }}
             </div>
-            <div class="thumb" v-if="selectedObject.type === 'image'">
-              <img v-bind:src="selectedObject.url" />
+            <div class="thumb" v-if="selectedItem.type === 'image'">
+              <img v-bind:src="selectedItem.url" />
             </div>
             <div class="action-items">
-              <a @click.prevent="moveFront(selectedObject.id)">
+              <a @click.prevent="moveFront(selectedItem.id)">
                 <font-awesome-icon title="Move Front" icon="caret-square-up" />
               </a>
-              <a @click.prevent="moveBack(selectedObject.id)">
+              <a @click.prevent="moveBack(selectedItem.id)">
                 <font-awesome-icon title="Move Back" icon="caret-square-down" />
               </a>
-              <a @click.prevent="deleteItem(selectedObject.id)">
+              <a @click.prevent="deleteItem(selectedItem.id)">
                 <font-awesome-icon title="Delete" icon="trash" />
               </a>
             </div>
           </div>
           <div class="text-edit">
             <form
-              v-if="selectedObject.id && selectedObject.type === 'text'"
-              v-on:change="updateItem"
+              v-if="selectedItem.id && selectedItem.type === 'text'"
+              v-on:change.prevent="updateItem"
             >
-              <select name="fontsize" v-model.number="selectedObject.fontsize">
+              <select name="fontsize" v-model.number="selectedItem.fontsize">
                 <option :value="undefined">Font Size</option>
                 <option
                   v-for="(fontsizeItem, i) in fontSizes"
@@ -108,7 +108,7 @@
               </select>
               <select
                 name="fontweight"
-                v-model.number="selectedObject.fontweight"
+                v-model.number="selectedItem.fontweight"
               >
                 <option :value="undefined">Font Weight</option>
                 <option
@@ -119,7 +119,7 @@
                   {{ fontWeightItem }}
                 </option>
               </select>
-              <select name="fontfamily" v-model="selectedObject.fontfamily">
+              <select name="fontfamily" v-model="selectedItem.fontfamily">
                 <option value="undefined">Font Family</option>
                 <option
                   v-for="(fontFamilyItem, i) in fontFamily"
@@ -131,10 +131,10 @@
               </select>
               <input
                 type="text"
-                v-bind:placeholder="selectedObject.text"
+                v-bind:placeholder="selectedItem.text"
                 name="text"
                 class="text-field"
-                v-model="selectedObject.text"
+                v-model="selectedItem.text"
               />
             </form>
           </div>
@@ -276,11 +276,11 @@ export default {
     return {
       textModalShown: false,
       canvas: null,
-      selectedObject: null,
+      selectedItem: null,
       items: [],
       bgColor: "#FFFFFF",
       bgImage: null,
-      fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
+      fontSizes: [26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50],
       fontWeights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
       fontFamily: ["Arial", "Courier New", "Tahoma", "Trebuchet MS", "Verdana"],
     };
@@ -441,10 +441,10 @@ export default {
       e.target.reset();
     },
     updateItem: function () {
-      console.log(this.selectedObject);
-      if (this.selectedObject) {
-        const itemId = this.selectedObject.id;
-        switch (this.selectedObject.type) {
+      console.log("selectedItem", this.selectedItem);
+      if (this.selectedItem) {
+        const itemId = this.selectedItem.id;
+        switch (this.selectedItem.type) {
           default:
             console.log("Need Item type to update");
             break;
@@ -454,21 +454,20 @@ export default {
             this.items = this.items.map((item) => {
               if (item.id === itemId) {
                 return {
-                  type: 'text',
-
+                  ...this.selectedItem
                 };
               }
               return item;
             });
-            console.log(this.items);
             break;
         }
+        this.canvas.requestRenderAll()
       }
     },
     deleteItem: function (id) {
       const remainingArr = this.items.filter((text) => text.id != id);
       this.items = remainingArr;
-      this.selectedObject = null;
+      this.selectedItem = null;
     },
     deleteBgImage: function (id) {
       if (id === this.bgImage.id) {
@@ -510,6 +509,10 @@ export default {
   padding-left: 20px;
   color: #fff;
   background: #1e1f22;
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  z-index: 999999;
 }
 .topBar button {
   background: none;
@@ -520,7 +523,7 @@ export default {
 .container .content {
   display: flex;
   height: 100vh;
-  margin: 0px;
+  margin: 54px 0 0 0;
   padding: 0px;
 }
 .qrEditor {
