@@ -70,7 +70,7 @@
             />
           </div>
         </div>
-        <div class="actions" v-if="selectedItem || bgImage">
+        <div class="actions">
           <h2>Action</h2>
           <div v-if="selectedItem" class="item">
             <div class="text" v-if="selectedItem.type === 'text'">
@@ -91,7 +91,7 @@
               </a>
             </div>
           </div>
-          <div class="text-edit">
+          <div v-if="selectedItem" class="text-edit">
             <form
               v-if="selectedItem.id && selectedItem.type === 'text'"
               v-on:change.prevent="updateItem"
@@ -131,7 +131,7 @@
                 </option>
               </select>
               <label>Font Color</label>
-              <input type="color" v-model="selectedItem.fontcolor" v-bind="selectedItem.fontcolor" name="fontcolor" />
+              <input type="color" name="fontcolor" v-model="selectedItem.fontcolor"/>
               <input
                 type="text"
                 v-bind:placeholder="selectedItem.text"
@@ -678,16 +678,15 @@ a.close-item {
   padding: 10px;
   font-size: 13px;
   margin-top: 10px;
-  width: 50%;
+  width: 49%;
   outline: none;
-}
-.text-edit select:nth-child(3) {
-  width: 100%;
 }
 .text-edit label {
   font-size: 12px;
   font-weight: bold;
-  display: block;
-  margin: 15px 0 10px 0;
+  margin: 15px 10px;
+}
+.text-edit select:nth-child(2) {
+  margin-left: 2%;
 }
 </style>
