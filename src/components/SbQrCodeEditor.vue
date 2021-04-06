@@ -269,7 +269,7 @@ export default {
       items: [],
       bgColor: "#FFFFFF",
       bgImage: null,
-      fontSizes: [26, 28, 30, 32, 34, 36, 38, 39, 40],
+      fontSizes: [26, 28, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50],
       fontWeights: [100, 200, 300, 400, 500, 600, 700, 800, 900],
       fontFamily: [
         'Arial',
